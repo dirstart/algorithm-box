@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "mocha",
-    "docs:dev": "vitepress dev",
+    "dev": "vitepress dev --open",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview"
   },
