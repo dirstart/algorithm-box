@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>交换机端口监控系统</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f2f5;
+    }
+
+    .dashboard {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .switch {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 15px;
+      width: 300px;
+    }
+
+    .switch-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .switch-name {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .switch-status {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #4caf50;
+    }
+
+    .ports-container {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+    }
+
+    .port {
+      width: 25px;
+      height: 25px;
+      border-radius: 4px;
+      background-color: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 10px;
+      position: relative;
+      transition: background-color 0.3s;
+    }
+
+    .port.active {
+      background-color: #4caf50;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .port-number {
+      position: absolute;
+      top: -15px;
+      font-size: 8px;
+      color: #666;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>交换机监控系统 (1500台)</h1>
+  <div
+    class="dashboard"
+    id="switchContainer"
+  ></div>
+
+  <script src="./app.js"></script>
+</body>
+
+</html>

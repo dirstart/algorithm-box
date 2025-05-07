@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    /* 父容器：竹签 */
+    .bamboo-stick {
+      display: flex;
+      flex-direction: column;
+      /* 垂直排列 */
+      align-items: center;
+      /* 水平居中 */
+      width: 10px;
+      height: 300px;
+      background: #8B4513;
+      /* 竹签颜色（棕色） */
+      margin: 50px auto;
+      /* 页面居中 */
+    }
+
+    /* 子元素：山楂球 */
+    .haw-ball {
+      width: 60px;
+      height: 60px;
+      background: #FF0000;
+      /* 红色 */
+      border-radius: 50%;
+      /* 圆形 */
+      margin: 15px 0;
+      /* 上下间距 */
+      box-shadow: 0 0 5px #333;
+      /* 轻微阴影增强立体感 */
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bamboo-stick">
+    <div class="haw-ball"></div>
+    <div class="haw-ball"></div>
+    <div class="haw-ball"></div>
+  </div>
+</body>
+
+</html>
