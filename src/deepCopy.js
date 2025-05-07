@@ -18,7 +18,7 @@ const a = {
 // 增加循环引用（结构化克隆支持）
 a._loopA = a
 
-const deepCopy = (obj, cache = new WeakMap()) => {
+export const deepCopy = (obj, cache = new WeakMap()) => {
   if (typeof obj !== 'object' || obj === null) {
     return obj
   }
@@ -52,5 +52,3 @@ const deepCopy = (obj, cache = new WeakMap()) => {
 // 共 9 个属性
 
 const _deepA = deepCopy(a)
-console.log('🍀🍀🍀🍀', a)
-console.log('🍀🍀🍀🍀', _deepA)
