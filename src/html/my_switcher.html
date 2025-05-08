@@ -11,7 +11,7 @@
 </head>
 <style>
   .container {
-    background-color: blanchedalmond;
+    background-color: rgb(234, 232, 228);
     padding: 10px;
     display: flex;
     gap: 20px;
@@ -19,7 +19,9 @@
   }
 
   .switch-wrap {
-    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
     background-color: #e0f0de;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -31,6 +33,7 @@
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     gap: 10px;
+    margin-bottom: 10px;
   }
 
   .switch-header__serial {
@@ -38,12 +41,35 @@
     justify-content: center;
     align-items: center;
     border-radius: 4px;
-    background-color: cornflowerblue;
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
   }
 
-  .switch-container {}
+  .switch-content {
+    flex: 1 1 0;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+  }
 
-  .switch-container .port {}
+  .switch-content__port {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    background: #afbdbb;
+    width: 28px;
+    height: 28px;
+  }
+
+  .switch-content__port.active {
+    background-color: #96d898;
+  }
+
+  .switch-content__port.active.blink {
+    background-color: #37953a;
+  }
 </style>
 
 <body>
@@ -70,21 +96,49 @@
       switchHeaderDom.appendChild(serialDom);
     }
 
+    // 交换机内容部分
     const switchContainerDom = document.createElement('div');
-    switchContainerDom.className = 'switch-container';
+    switchContainerDom.className = 'switch-content';
     switchWrapDom.appendChild(switchContainerDom);
-
+    // 交换机内容的子元素
     for (let i = 0; i < portNumber; i++) {
       const portEl = document.createElement('div');
-      portEl.className = 'port';
-      switchWrapDom.appendChild(portEl);
+      portEl.className = 'switch-content__port';
+      // 随机设置部分交换机为【开启】状态
+      if (Math.random() > 0.7) {
+        portEl.classList.add('active');
+      }
+      switchContainerDom.appendChild(portEl);
     }
 
     return switchWrapDom;
   }
 
+  // 选择 10% 的端口进行每秒闪烁
+  const blinkPort = () => {
+    const elList = document.getElementsByClassName('switch-content__port');
+    const len = elList.length;
+    const blinkLen = Math.floor(0.3 * len);
+
+    setInterval(() => {
+      for (let i = 0; i < len; i++) {
+        const randomIndex = Math.floor(Math.random() * len);
+        const port = elList[randomIndex];
+
+        if (port.classList.contains('blink')) {
+          port.classList.remove('blink');
+        } else {
+          port.classList.add('blink');
+        }
+      }
+    }, 500)
+  }
+
+
   const switchDom = createSingleSwitch({});
   oContainer.appendChild(switchDom);
+  blinkPort();
+
 </script>
 
 </html>
