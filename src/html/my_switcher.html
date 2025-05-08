@@ -80,7 +80,10 @@
 <script>
   const oContainer = document.getElementsByClassName('container')[0];
   // 交换机端口数量是不固定的 8、16、24、32 口  4 * 8
-  const createSingleSwitch = ({ portNumber = 32 }) => {
+  const createSingleSwitch = ({ parentEL = null, portNumber = 32 }) => {
+    if (!parentEL) {
+      return;
+    }
     const switchWrapDom = document.createElement('div');
     switchWrapDom.className = 'switch-wrap';
 
@@ -111,6 +114,8 @@
       switchContainerDom.appendChild(portEl);
     }
 
+    parentEL.appendChild(switchWrapDom);
+
     return switchWrapDom;
   }
 
@@ -135,8 +140,11 @@
   }
 
 
-  const switchDom = createSingleSwitch({});
-  oContainer.appendChild(switchDom);
+
+  const allSwitchLen = 100;
+  for (let i = 0; i < allSwitchLen; i++) {
+    createSingleSwitch({ parentEL: oContainer });
+  }
   blinkPort();
 
 </script>
