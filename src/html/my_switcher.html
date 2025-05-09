@@ -19,6 +19,7 @@
   }
 
   .switch-wrap {
+    position: relative;
     display: flex;
     flex-direction: column;
     padding: 10px;
@@ -34,6 +35,17 @@
     grid-template-columns: repeat(8, 1fr);
     gap: 10px;
     margin-bottom: 10px;
+  }
+
+  .switch-header__index {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background-color: #37953a;
   }
 
   .switch-header__serial {
@@ -78,6 +90,7 @@
   </div>
 </body>
 <script>
+  let count = 0;
   const oContainer = document.getElementsByClassName('container')[0];
   // 交换机端口数量是不固定的 8、16、24、32 口  4 * 8
   const createSingleSwitch = ({ parentEL = null, portNumber = 32 }) => {
@@ -91,6 +104,12 @@
     const switchHeaderDom = document.createElement('div');
     switchHeaderDom.className = 'switch-header';
     switchWrapDom.appendChild(switchHeaderDom);
+    // 交换机标记
+    const switchIndexDom = document.createElement('div');
+    switchIndexDom.innerText = ++count;
+    switchIndexDom.className = 'switch-header__index';
+    switchWrapDom.appendChild(switchIndexDom);
+
     // 交换机顶部 pannel 的子元素
     for (let i = 0; i < 8; i++) {
       const serialDom = document.createElement('div');
@@ -139,9 +158,7 @@
     }, 500)
   }
 
-
-
-  const allSwitchLen = 100;
+  const allSwitchLen = 500;
   for (let i = 0; i < allSwitchLen; i++) {
     createSingleSwitch({ parentEL: oContainer });
   }
