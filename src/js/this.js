@@ -1,33 +1,34 @@
-function Test() {
-  this.a = 'test' // 【实例属性】
-  console.log(this, this.a) // { a: 'test' } 'test'
-  const obj = {
-    a: 'obj',
-    fn() {
-      console.log(this, this.a) // obj, 'obj'
-    },
-    _fn: function () {
-      console.log(this, this.a) // obj, 'obj'
-    },
-    __fn: () => {
-      console.log(this, this.a) // { a: 'test' }, 'test'
-    },
+class Parent {
+  static name = 'ParentClass'
+
+  constructor() {
+    this.name = 'ParentInstance'
+    this.method = () => console.log(this.name)
   }
 
-  return obj
+  static staticMethod() {
+    console.log(this.name)
+  }
+
+  protoMethod() {
+    console.log(this.name)
+  }
 }
 
-const t = new Test()
+class Child extends Parent {
+  static name = 'ChildClass'
 
-t.fn() // obj, 'obj'
+  constructor() {
+    super()
+    this.name = 'ChildInstance'
+  }
+}
 
-t._fn() // obj, 'obj'
+const child = new Child()
 
-t.__fn() // { a: 'test' }, 'test
+child.method() // ChildInstance
+child.protoMethod() // ChildInstance
+Child.staticMethod() // ChildClass
 
-console.log(t) // 指向的是 obj，将实例覆盖了
-
-setTimeout(t.fn, 0)
-
-// const { fn } = t
-// fn() // 报错，全局 this 中没有 a
+const extractedMethod = child.method
+extractedMethod() // ChildInstance
