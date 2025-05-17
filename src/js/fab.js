@@ -48,13 +48,27 @@ const fabIteration = (n) => {
   return count
 }
 
-// 当 n = 3, count = 1 + 1 + (1 + 2) => 5
-console.log('🍀🍀🍀🍀', fabIteration(8))
-console.log('🍀🍀🍀🍀', fabIteration(9))
-console.log('🍀🍀🍀🍀', fabIteration(10))
 
 // 4.动态规划实现，自底向上的方法
 const fibDp = (n) => {
+
+}
+
+
+
+
+// 5.动态规划空间优化，只需要保存 2 个状态
+const fibDpOptimize = (n) => {
   if (n === 0) return 0
   if (n === 1) return 1
+  let prev = 0, curry = 1;
+  for (let i = 2; i <= n; i++) {
+    [prev, curry] = [curry, prev + curry]
+  }
+
+  return curry;
 }
+
+console.log('🍀🍀🍀🍀', fibDpOptimize(8))
+console.log('🍀🍀🍀🍀', fibDpOptimize(9))
+console.log('🍀🍀🍀🍀', fibDpOptimize(10))

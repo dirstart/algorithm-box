@@ -1,41 +1,48 @@
-function PromiseA() {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve('A')
-    }, 2000)
-  })
-}
+const promiseOne = new Promise((resolve) => {
+  setTimeout(() => {
+    console.log('🍀🍀🍀🍀', 'promiseOne')
+    resolve('promiseOne')
+  }, 1000)
+})
 
-function PromiseB() {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve('B')
-    }, 300)
-  })
-}
+const promiseTwo = new Promise((resolve) => {
+  setTimeout(() => {
+    console.log('🍀🍀🍀🍀', 'promiseTwo')
+    resolve('promiseTwo')
+  }, 2000)
+})
 
-export const promiseAll = (list) => {
+
+export const promiseAll = (promiseList) => {
+  if (!Array.isArray(promiseList)) {
+    throw new TypeError('promiseAll must be an array')
+  }
+
+  const len = promiseList.length;
+
+  if (!len) {
+    return Promise.resolve([])
+  }
+
+
   return new Promise((resolve, reject) => {
-    if (!Array.isArray(list)) {
-      return reject(new TypeError('参数需要是个数组'))
-    }
-    if (!list?.length) {
-      resolve([])
-    }
-    let result = []
-    let count = list.length
-    list.forEach((fn, index) => {
-      Promise.resolve(fn)
-        .then((singleValue) => {
-          result[index] = singleValue
-          --count
-          if (count === 0) {
-            resolve(result)
-          }
-        })
-        .catch((e) => {
-          reject(e)
-        })
+    const result = [];
+    let count = 0;
+    promiseList.forEach((fn, index) => {
+      Promise.resolve(fn).then(res => {
+        result[index] = res;
+        ++count;
+        if (count === len) {
+          resolve(result)
+        }
+      }).catch(e => {
+        reject(e)
+      })
     })
   })
+
 }
+
+promiseAll([promiseOne, promiseTwo]).then(res => {
+  console.log('🍀🍀🍀🍀', res)
+})
