@@ -10,10 +10,12 @@ global.document = dom.window.document
 global.window = dom.window
 
 const rgbToHex = (rgb) => {
-  const [r, g, b] = rgb.match(/\d+/g)
-  return `#${([r, g, b].map(item => {
-    return item.toString(16).padStart(2, 0)
-  })).join('')}`
+  const [r, g, b] = rgb.match(/\d+/g).map(Number)
+  return `#${[r, g, b]
+    .map((item) => {
+      return item.toString(16).padStart(2, 0)
+    })
+    .join('')}`
 }
 
 describe('Query 类测试', () => {
@@ -30,8 +32,13 @@ describe('Query 类测试', () => {
   it('测试是否能够正确添加 css', () => {
     const query = new Query('#testElement')
     query.css('color', '#089e8a')
-    const hexColor = 
-    // expect(query.element.style.color).to.equal('#089e8a')
+    const hexColor = rgbToHex(query.element.style.color)
+    expect(hexColor).to.equal('#089e8a')
   })
   // 测试如果为异常，是否正确抛出错误
+  it('测试如果为异常，是否正确抛出错误', () => {
+    const query = new Query('.god')
+    query.css('color', '#089e8a')
+    expect(query.document).to.not.throw
+  })
 })
