@@ -1,67 +1,37 @@
-import { describe } from 'mocha';
-import { expect } from 'chai';
-import { Query } from '../src/js/chainedFunction.js';
-import { JSDOM } from 'jsdom';
+import { describe } from 'mocha'
+import { expect } from 'chai'
+import { Query } from '../src/js/chainQuery.js'
+import { JSDOM } from 'jsdom'
 
 // 创建模拟的 DOM 环境
-const dom = new JSDOM(`<!DOCTYPE html><div id="testElement"></div>`);
+const dom = new JSDOM(`<!DOCTYPE html><div id="testElement"></div>`)
 
-global.document = dom.window.document;
-global.window = dom.window;
+global.document = dom.window.document
+global.window = dom.window
+
+const rgbToHex = (rgb) => {
+  const [r, g, b] = rgb.match(/\d+/g)
+  return `#${([r, g, b].map(item => {
+    return item.toString(16).padStart(2, 0)
+  })).join('')}`
+}
 
 describe('Query 类测试', () => {
-    let testElement;
-    
-    beforeEach(() => {
-        // 在每个测试前创建一个测试用的 div 元素
-        testElement = document.createElement('div');
-        testElement.id = 'testElement';
-        document.body.appendChild(testElement);
-    });
-
-    afterEach(() => {
-        // 在每个测试后移除测试用的 div 元素
-        document.body.removeChild(testElement);
-    });
-
-    it('应该正确设置 CSS 样式', () => {
-        new Query('#testElement')
-            .css('color', 'red')
-
-        // const style = window.getComputedStyle(testElement);
-        // console.log('🍀🍀🍀🍀', style)
-        // expect(style.color).to.equal('red');
-
-        // new Query('#testElement')
-        //     .css('color', 'red')
-        //     .css('backgroundColor', 'blue');
-        
-        // const style = window.getComputedStyle(testElement);
-        // expect(style.color).to.equal('red');
-        // expect(style.backgroundColor).to.equal('blue');
-    });
-
-    // it('应该正确添加类名', () => {
-    //     new Query('#testElement')
-    //         .addClass('test-class');
-        
-    //     expect(testElement.classList.contains('test-class')).to.be.true;
-    // });
-
-    // it('应该正确绑定事件', (done) => {
-    //     new Query('#testElement')
-    //         .on('click', () => done());
-        
-    //     testElement.click();
-    // });
-
-    // it('当元素不存在时应该安全地执行方法', () => {
-    //     const query = new Query('#nonExistentElement');
-        
-    //     expect(() => {
-    //         query.css('color', 'red')
-    //             .addClass('test-class')
-    //             .on('click', () => {});
-    //     }).to.not.throw();
-    // });
-});
+  // 测试是否能够正确获取 dom
+  it('是否能够正确获取 dom', () => {
+    const query = new Query('#testElement')
+    const _ele = document.getElementById('testElement')
+    expect(query.element).to.equal(_ele)
+  })
+  it('测试获取异常时，为 null', () => {
+    const query = new Query('.god')
+    expect(query.element).to.be.null
+  })
+  it('测试是否能够正确添加 css', () => {
+    const query = new Query('#testElement')
+    query.css('color', '#089e8a')
+    const hexColor = 
+    // expect(query.element.style.color).to.equal('#089e8a')
+  })
+  // 测试如果为异常，是否正确抛出错误
+})
