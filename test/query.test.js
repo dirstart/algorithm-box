@@ -41,4 +41,19 @@ describe('Query 类测试', () => {
     query.css('color', '#089e8a')
     expect(query.document).to.not.throw
   })
+
+  it('测试能否正确添加 class', () => {
+    const query = new Query('#testElement')
+    query.addClass('test')
+    expect(query.element.classList.contains('test')).to.be.true
+  })
+  it('测试能否正确添加事件', () => {
+    const query = new Query('#testElement')
+    let flag = false
+    query.on('click', () => {
+      flag = true
+    })
+    query.element.click()
+    expect(flag).to.be.true
+  })
 })
