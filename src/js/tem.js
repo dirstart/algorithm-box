@@ -1,37 +1,32 @@
-class Person {
-  constructor(name) {
-    this.name = name
+class Query {
+  constructor(selector) {
+    this.element = document.querySelector(selector)
   }
 
-  setName(name) {
-    this.name = name
+  css(property, value) {
+    if (this.element) {
+      this.element.style[property] = value
+    }
     return this
   }
 
-  introduce() {
-    console.log(`Hello, I'm ${this.name}`)
+  addClass(className) {
+    if (this.element) {
+      this.element.classList.add(className)
+    }
     return this
   }
 
-  work() {
-    return new Job(this) // 返回 Job 对象以支持链式调用
-  }
-}
-
-class Job {
-  constructor(person) {
-    this.person = person
-  }
-
-  at(company) {
-    console.log(`${this.person.name} works at ${company}`)
-    return this.person // 返回 Person 对象以继续链式调用
+  on(event, callback) {
+    if (this.element) {
+      this.element.addEventListener(event, callback)
+    }
+    return this
   }
 }
 
 // 使用示例
-new Person('Alice')
-  .setName('Bob')
-  .work() // 进入 Job 链
-  .at('Google') // 返回 Person 链
-  .introduce() // 输出: Hello, I'm Bob
+new Query('#myBtn')
+  .css('color', 'red')
+  .addClass('active')
+  .on('click', () => console.log('Clicked!'))
