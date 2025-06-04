@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 创建注册表来跟踪对象何时被回收
+  // const registry = new FinalizationRegistry((heldValue) => {
+  //   console.log(`对象 ${heldValue} 已被垃圾回收`);
+  // });
+
+  // function testWeakMap() {
+  //   let key = {};
+  //   registry.register(key, "WeakMap键");
+
+  //   const weakMap = new WeakMap();
+  //   weakMap.set(key, "关联数据");
+  //   key = null; // 移除唯一引用
+  // }
+
+  // function testMap() {
+  //   let key = {};
+  //   registry.register(key, "Map键");
+
+  //   const map = new Map();
+  //   map.set(key, "关联数据");
+  //   key = null; // 移除唯一引用
+  // }
+
+  // // 测试WeakMap
+  // testWeakMap();
+
+  // // 测试Map
+  // testMap();
+
+  // 手动触发垃圾回收（在Chrome开发者工具的Memory标签中点击垃圾回收图标）
+</script>
+
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>Document</title>
+</head>
+<style>
+  .container {
+    background-color: rgb(234, 232, 228);
+    padding: 10px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .switch-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background-color: #e0f0de;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    height: 200px;
+  }
+
+  .switch-header {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .switch-header__index {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    position: absolute;
+    width: 36px;
+    height: 24px;
+    background-color: #37953a;
+  }
+
+  .switch-header__serial {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .switch-content {
+    flex: 1 1 0;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+  }
+
+  .switch-content__port {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    background: #afbdbb;
+    width: 28px;
+    height: 28px;
+  }
+
+  .switch-content__port.active {
+    background-color: #96d898;
+  }
+
+  .switch-content__port.active.blink {
+    background-color: #37953a;
+  }
+</style>
+
+<body>
+  <h1>交换机监控系统（1500台）</h1>
+  <div class="container">
+  </div>
+</body>
+<script>
+  let count = 0;
+  const oContainer = document.getElementsByClassName('container')[0];
+  // 交换机端口数量是不固定的 8、16、24、32 口  4 * 8
+  const createSingleSwitch = ({ parentEL = null, portNumber = 32, countIndex = 0 }) => {
+    if (!parentEL) {
+      return;
+    }
+    const switchWrapDom = document.createElement('div');
+    switchWrapDom.className = 'switch-wrap';
+
+    // 交换机顶部 pannel
+    const switchHeaderDom = document.createElement('div');
+    switchHeaderDom.className = 'switch-header';
+    switchWrapDom.appendChild(switchHeaderDom);
+    // 交换机标记
+    const switchIndexDom = document.createElement('div');
+    switchIndexDom.innerText = countIndex + 1;
+    switchIndexDom.className = 'switch-header__index';
+    switchWrapDom.appendChild(switchIndexDom);
+
+    // 交换机顶部 pannel 的子元素
+    for (let i = 0; i < 8; i++) {
+      const serialDom = document.createElement('div');
+      serialDom.className = 'switch-header__serial';
+      serialDom.innerText = i + 1;
+      switchHeaderDom.appendChild(serialDom);
+    }
+
+    // 交换机内容部分
+    const switchContainerDom = document.createElement('div');
+    switchContainerDom.className = 'switch-content';
+    switchWrapDom.appendChild(switchContainerDom);
+    // 交换机内容的子元素
+    for (let i = 0; i < portNumber; i++) {
+      const portEl = document.createElement('div');
+      portEl.className = 'switch-content__port';
+      // 随机设置部分交换机为【开启】状态
+      if (Math.random() > 0.7) {
+        portEl.classList.add('active');
+      }
+      switchContainerDom.appendChild(portEl);
+    }
+
+    parentEL.appendChild(switchWrapDom);
+
+    return switchWrapDom;
+  }
+
+  // 选择 10% 的端口进行每秒闪烁
+  const blinkPort = () => {
+    const elList = document.getElementsByClassName('switch-content__port');
+    const len = elList.length;
+    const blinkLen = Math.floor(0.3 * len);
+
+    setInterval(() => {
+      for (let i = 0; i < len; i++) {
+        const randomIndex = Math.floor(Math.random() * len);
+        const port = elList[randomIndex];
+
+        if (port.classList.contains('blink')) {
+          port.classList.remove('blink');
+        } else {
+          port.classList.add('blink');
+        }
+      }
+    }, 500)
+  }
+
+  const allSwitchLen = 100;
+  for (let i = 0; i < allSwitchLen; i++) {
+    createSingleSwitch({ parentEL: oContainer, countIndex: count });
+  }
+  blinkPort();
+
+</script>
+
+</html>

@@ -5,8 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "mocha",
-    "docs:dev": "vitepress dev",
+    "test": "mocha test/**/*.js --recursive",
+    "test:watch": "mocha test/**/*.js --watch --parallel --recursive",
+    "test:coverage": "nyc mocha",
+    "dev": "vitepress dev --open",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview"
   },
@@ -14,10 +16,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "nyc": "^17.1.0",
+    "prettier": "3.5.3",
     "vitepress": "^1.6.3"
   },
   "dependencies": {
     "chai": "^5.2.0",
+    "jsdom": "^26.1.0",
     "mocha": "^11.1.0"
   }
 }

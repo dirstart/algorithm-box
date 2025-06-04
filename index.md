@@ -3,23 +3,28 @@
 layout: home
 
 hero:
-  name: "Algorithm Box"
-  text: "A VitePress Site"
+  name: 'Algorithm Box'
+  text: '当前练习'
   tagline: My great project tagline
   actions:
     - theme: brand
-      text: Markdown Examples
+      text: 算法题
       link: /markdown-examples
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: JS
+      link: /js-exam
+    - theme: alt
+      text: CSS
+      link: /css-exam
+    - theme: alt
+      text: 设计模式
+      link: /design-exam
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: 🍉 工程能力 + 算法能力
+    details: 用健壮的思想解决具体的问题
+  - title: 🍀 找到变化并封装之
+    details: 用抽象的思维应对复杂的系统
+  - title: 🚀 可扩展、可维护、可读！
+    details: 用工程化的思维面对更大的业务
 ---
-
