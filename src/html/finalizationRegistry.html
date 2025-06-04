@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=, initial-scale=1.0"
+  >
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  const person = {
+    name: 'chp',
+    age: 18
+  }
+  const fr = new FinalizationRegistry((value) => {
+    console.log(`对象 ${value} 被回收了`);
+  })
+
+  fr.register(person, 'person')
+
+  fr.unregister(person)
+
+  person = null;
+
+</script>
+
+</html>
