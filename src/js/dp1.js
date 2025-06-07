@@ -43,6 +43,7 @@ const getCoinCount = (amount, coins = [5, 3, 2, 1]) => {
 }
 
 /**
+ * 【最少硬币数】——背包问题
  * 拿硬币，coins，amount
  * 没有任何一种硬币组合，则返回 -1
  * dp此时表达的是【次数】
