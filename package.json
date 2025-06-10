@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "jest": "jest",
     "test": "mocha test/**/*.js --recursive",
     "test:watch": "mocha test/**/*.js --watch --parallel --recursive",
     "test:coverage": "nyc mocha",
@@ -16,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "jest": "^30.0.0",
     "nyc": "^17.1.0",
     "prettier": "3.5.3",
     "vitepress": "^1.6.3"
