@@ -1,6 +1,6 @@
 import { describe } from 'mocha'
 import { expect } from 'chai'
-import { debounce } from '../src/js/debounce.js'
+import { debounce } from '../src/js/throttle-debounce.js'
 
 describe('debounce must trigger once time', () => {
   it('shoulde call once time', (done) => {
