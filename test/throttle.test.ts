@@ -1,3 +1,3 @@
-const a: number = 1
+import { debounce, throttle } from '../src/ts/throttle-debounce'
 
-console.log(a)
+console.log(debounce, throttle)
