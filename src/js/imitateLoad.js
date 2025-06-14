@@ -1,38 +1,63 @@
-// 带缓存的实现
-const moduleCache = new Map()
-
-function load(modulePath) {
-  // 检查缓存
-  if (moduleCache.has(modulePath)) {
-    return Promise.resolve(moduleCache.get(modulePath))
-  }
-
-  // 浏览器环境使用import，Node环境使用require
-  const loader =
-    typeof window !== 'undefined'
-      ? import(modulePath)
-      : new Promise((resolve, reject) => {
-          try {
-            resolve(require(modulePath))
-          } catch (err) {
-            reject(err)
-          }
-        })
-
-  return loader.then((module) => {
-    if (typeof module.render !== 'function') {
-      throw new Error('Module does not have a render method')
-    }
-    // 缓存模块
-    moduleCache.set(modulePath, module)
-    return module
+// 第一种，如果支持 ES6
+function load1(url) {
+  return import(url).then((module) => {
+    return module.default || module
   })
 }
 
-// 使用示例
-load('./bundle.js')
-  .then((mod) => {
-    console.log('模块加载成功')
-    return mod.render()
-  })
-  .catch((err) => console.error('加载失败:', err))
+load1('./imitateA.js').then((page) => {
+  page.render()
+})
+
+const loadScript = (url, callback) => {
+  const scriptEl = document.createElement('script')
+  scriptEl.src = url
+  // 成功加载后执行回调
+  scriptEl.onload = function () {
+    if (callback) {
+      callback(null, window.MyModule)
+    }
+  }
+  // 失败的回调
+  scriptEl.onerror = function () {
+    if (callback) {
+      callback(new Error('12'))
+    }
+  }
+  document.head.appendChild(scriptEl)
+}
+
+const singlePromise = function (fn) {
+  const callback = []
+  this.then = function (cb) {
+    callback.push(cb)
+    return this
+  }
+
+  function resolve(value) {
+    setTimeout(() => {
+      callback.forEach((fn) => {
+        fn(value)
+      })
+    }, 0)
+  }
+
+  fn(resolve)
+}
+
+// singlePromise()
+
+const x = new singlePromise((resolve) => {
+  setTimeout(() => {
+    resolve()
+  }, 3000)
+})
+x.then((daa) => {
+  console.log('🍀🍀🍀🍀 then 之后得到的data')
+})
+;(function (modules) {
+  function __webpack_require__(moduleId) {
+    // 模拟 require 逻辑
+  }
+  return __webpack_require__(0) // 从入口模块开始执行
+})([function (module, exports, __webpack_require__) {}])
