@@ -26,4 +26,10 @@ const obj = {}
 const BoundPerson = Person.__bind(obj)
 const _b = new BoundPerson(1, 2)
 
-console.log('🍀🍀🍀🍀', _b instanceof Person)
+console.log('🍀🍀🍀🍀', _b instanceof Person) // true
+console.log('🍀🍀🍀🍀', _b instanceof BoundPerson) // true
+
+const RealBind = Person.bind(obj)
+const _realBindIns = new RealBind()
+console.log('🍀🍀🍀🍀', _realBindIns instanceof Person) // true
+console.log('🍀🍀🍀🍀', _realBindIns instanceof RealBind) // true
