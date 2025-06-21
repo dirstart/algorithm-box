@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>Document</title>
+</head>
+
+<body>
+  <div
+    id="box"
+    style="position: absolute;width: 100px;height: 100px;background-color: red;"
+  ></div>
+  <button onclick="start()">开始</button>
+</body>
+<script>
+  const oBox = document.getElementById('box');
+  let left = 0;
+  const animate = () => {
+    left = (++left) % window.innerWidth
+    oBox.style.left = left + 'px';
+    requestAnimationFrame(animate)
+  }
+  animate();
+  const godTimer = (fn, interval) => {
+    let expected = +new Date();
+    const tick = () => {
+      const now = +new Date();
+      const drift = now - expected; // 大概率 > 0
+      console.log('🍀🍀🍀🍀误差', drift);
+      expected += interval;
+      // fn();
+      setTimeout(tick, Math.max(0, interval - drift))
+    }
+    tick();
+  }
+
+  function start() {
+    godTimer(() => {
+      console.log('🍀🍀🍀🍀', +new Date() / 1000)
+    }, 1000)
+  }
+
+</script>
+
+</html>

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>高级酒吧音乐可视化</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      font-family: 'Arial', sans-serif;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px;
+      border-radius: 10px;
+      z-index: 100;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    button {
+      background: linear-gradient(45deg, #ff00cc, #3333ff);
+      border: none;
+      color: white;
+      padding: 12px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 8px 4px;
+      cursor: pointer;
+      border-radius: 25px;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(255, 0, 204, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 0, 204, 0.4);
+    }
+
+    select {
+      padding: 10px;
+      border-radius: 20px;
+      margin-left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .title {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="controls">
+    <button id="startButton">🎤 启动音乐捕捉</button>
+    <select id="visualizerSelect">
+      <option value="neonTunnel">霓虹隧道</option>
+      <option value="liquidDrops">液态音波</option>
+      <option value="fractalEnergy">分形能量</option>
+      <option value="holographicBars">全息频谱</option>
+      <option value="cosmicPulse">宇宙脉动</option>
+    </select>
+  </div>
+  <canvas id="visualizer"></canvas>
+  <div class="title">酒吧音乐实时可视化系统 v2.0</div>
+
+  <script>
+    // 获取DOM元素
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    const startButton = document.getElementById('startButton');
+    const visualizerSelect = document.getElementById('visualizerSelect');
+
+    // 设置画布大小为窗口大小
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+
+    // 音频分析相关变量
+    let audioContext;
+    let analyser;
+    let microphone;
+    let dataArray;
+    let timeDataArray;
+    let animationId;
+    let isPlaying = false;
+
+    // 可视化类型
+    let visualizerType = 'neonTunnel';
+
+    // 特效参数
+    const effects = {
+      neonTunnel: {
+        rotation: 0,
+        segments: 120,
+        maxRadius: 0
+      },
+      liquidDrops: {
+        drops: [],
+        dropCount: 30
+      },
+      fractalEnergy: {
+        branches: [],
+        lastSpawn: 0
+      },
+      holographicBars: {
+        rotation: 0,
+        depth: 200
+      },
+      cosmicPulse: {
+        pulses: [],
+        stars: []
+      }
+    };
+
+    // 初始化特效
+    function initEffects() {
+      // 液态音波效果初始化
+      for (let i = 0; i < effects.liquidDrops.dropCount; i++) {
+        effects.liquidDrops.drops.push({
+          x: Math.random() * canvas.width,
+          y: canvas.height + Math.random() * 100,
+          size: Math.random() * 15 + 5,
+          speed: Math.random() * 3 + 1,
+          color: `hsla(${Math.random() * 60 + 180}, 100%, 50%, ${Math.random() * 0.5 + 0.3})`,
+          rippleSize: 0,
+          rippling: false
+        });
+      }
+
+      // 宇宙脉动效果初始化
+      for (let i = 0; i < 200; i++) {
+        effects.cosmicPulse.stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 1.5,
+          brightness: Math.random() * 0.5 + 0.5
+        });
+      }
+    }
+
+    initEffects();
+
+    // 开始麦克风输入
+    startButton.addEventListener('click', async () => {
+      if (isPlaying) {
+        stopAudio();
+        startButton.textContent = '🎤 启动音乐捕捉';
+        isPlaying = false;
+        return;
+      }
+
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphone = audioContext.createMediaStreamSource(stream);
+        microphone.connect(analyser);
+
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        timeDataArray = new Uint8Array(analyser.fftSize);
+
+        startButton.textContent = '⏹ 停止捕捉';
+        isPlaying = true;
+
+        // 开始动画循环
+        animate();
+      } catch (error) {
+        console.error('Error accessing microphone:', error);
+        alert('无法访问麦克风，请确保已授予权限。错误: ' + error.message);
+      }
+    });
+
+    // 监听可视化类型变化
+    visualizerSelect.addEventListener('change', () => {
+      visualizerType = visualizerSelect.value;
+      // 重置画布背景
+      ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // 停止音频
+    function stopAudio() {
+      if (microphone) {
+        microphone.disconnect();
+      }
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    }
+
+    // 动画循环
+    function animate() {
+      animationId = requestAnimationFrame(animate);
+
+      // 获取频率数据
+      analyser.getByteFrequencyData(dataArray);
+      analyser.getByteTimeDomainData(timeDataArray);
+
+      // 根据选择的类型渲染不同的可视化效果
+      switch (visualizerType) {
+        case 'neonTunnel':
+          drawNeonTunnel();
+          break;
+        case 'liquidDrops':
+          drawLiquidDrops();
+          break;
+        case 'fractalEnergy':
+          drawFractalEnergy();
+          break;
+        case 'holographicBars':
+          drawHolographicBars();
+          break;
+        case 'cosmicPulse':
+          drawCosmicPulse();
+          break;
+      }
+    }
+
+    // 1. 霓虹隧道效果
+    function drawNeonTunnel() {
+      // 半透明背景创造拖尾效果
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      effects.neonTunnel.maxRadius = Math.min(canvas.width, canvas.height) * 0.45;
+      effects.neonTunnel.rotation += 0.002;
+
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(effects.neonTunnel.rotation);
+
+      const segmentAngle = (Math.PI * 2) / effects.neonTunnel.segments;
+      const bassAvg = getFrequencyRangeAverage(0, 10);
+
+      for (let i = 0; i < effects.neonTunnel.segments; i++) {
+        const angle = i * segmentAngle;
+        const freqIndex = Math.floor((i / effects.neonTunnel.segments) * dataArray.length);
+        const value = dataArray[freqIndex] / 255;
+        const radius = effects.neonTunnel.maxRadius * (0.7 + value * 0.3);
+
+        const x1 = Math.cos(angle) * (effects.neonTunnel.maxRadius * 0.5);
+        const y1 = Math.sin(angle) * (effects.neonTunnel.maxRadius * 0.5);
+        const x2 = Math.cos(angle) * radius;
+        const y2 = Math.sin(angle) * radius;
+
+        // 创建霓虹发光效果
+        const hue = (i * 3 + Date.now() * 0.01) % 360;
+        const glow = value * 20 + bassAvg * 30;
+
+        // 绘制发光线条
+        ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${0.2 + value * 0.8})`;
+        ctx.lineWidth = 2 + value * 8;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        // 添加发光效果
+        ctx.shadowBlur = glow;
+        ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+        ctx.strokeStyle = `hsla(${hue}, 100%, 80%, 0.8)`;
+        ctx.lineWidth = 1 + value * 3;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // 在末端添加光点
+        if (value > 0.5) {
+          ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${value})`;
+          ctx.beginPath();
+          ctx.arc(x2, y2, value * 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.restore();
+
+      // 中心能量球
+      const centerGlow = bassAvg * 50;
+      ctx.shadowBlur = centerGlow;
+      ctx.shadowColor = 'rgba(100, 200, 255, 0.8)';
+      ctx.fillStyle = 'rgba(150, 220, 255, 0.6)';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 10 + bassAvg * 30, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // 2. 液态音波效果
+    function drawLiquidDrops() {
+      // 半透明背景创造拖尾效果
+      ctx.fillStyle = 'rgba(0, 0, 10, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const bassValue = getFrequencyRangeAverage(0, 5) * 2;
+      const midValue = getFrequencyRangeAverage(20, 40);
+      const highValue = getFrequencyRangeAverage(80, 100);
+
+      // 更新和绘制液滴
+      for (let i = 0; i < effects.liquidDrops.drops.length; i++) {
+        const drop = effects.liquidDrops.drops[i];
+
+        // 随机触发波纹效果
+        if (!drop.rippling && Math.random() < highValue * 0.01) {
+          drop.rippling = true;
+          drop.rippleSize = 0;
+        }
+
+        // 液滴下落
+        drop.y -= drop.speed * (1 + bassValue * 0.5);
+        if (drop.y < -drop.size * 2) {
+          drop.y = canvas.height + Math.random() * 100;
+          drop.x = Math.random() * canvas.width;
+          drop.rippling = false;
+        }
+
+        // 绘制液滴
+        const dropHue = 200 + Math.sin(Date.now() * 0.001 + i) * 30;
+        ctx.fillStyle = `hsla(${dropHue}, 100%, 60%, 0.7)`;
+        ctx.beginPath();
+        ctx.ellipse(drop.x, drop.y, drop.size, drop.size * 1.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 绘制液滴底部高光
+        ctx.fillStyle = `hsla(${dropHue}, 100%, 80%, 0.4)`;
+        ctx.beginPath();
+        ctx.ellipse(drop.x, drop.y + drop.size * 0.7,
+          drop.size * 0.6, drop.size * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 绘制波纹效果
+        if (drop.rippling) {
+          const rippleAlpha = 1 - (drop.rippleSize / 100);
+          if (rippleAlpha > 0) {
+            ctx.strokeStyle = `hsla(${dropHue}, 100%, 70%, ${rippleAlpha * 0.6})`;
+            ctx.lineWidth = 2 + midValue * 0.5;
+            ctx.beginPath();
+            ctx.arc(drop.x, drop.y, drop.rippleSize, 0, Math.PI * 2);
+            ctx.stroke();
+            drop.rippleSize += 1 + highValue * 0.1;
+          } else {
+            drop.rippling = false;
+          }
+        }
+      }
+
+      // 底部音波线
+      const waveHeight = canvas.height * 0.1;
+      const waveY = canvas.height - waveHeight * 0.5;
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = `hsla(200, 100%, 60%, 0.8)`;
+      ctx.beginPath();
+
+      for (let x = 0; x < canvas.width; x += 5) {
+        const index = Math.floor((x / canvas.width) * timeDataArray.length);
+        const value = timeDataArray[index] / 128.0;
+        const y = waveY - (value * waveHeight);
+
+        if (x === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+
+      ctx.stroke();
+
+      // 添加水面反射效果
+      const gradient = ctx.createLinearGradient(0, waveY - waveHeight, 0, waveY + waveHeight);
+      gradient.addColorStop(0, 'hsla(200, 100%, 60%, 0.1)');
+      gradient.addColorStop(1, 'hsla(200, 100%, 60%, 0.4)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, waveY - waveHeight, canvas.width, waveHeight * 2);
+    }
+
+    // 3. 分形能量效果
+    function drawFractalEnergy() {
+      // 黑色背景
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const bassValue = getFrequencyRangeAverage(0, 5);
+      const highValue = getFrequencyRangeAverage(80, 100);
+
+      // 根据低频生成新分支
+      const now = Date.now();
+      if (now - effects.fractalEnergy.lastSpawn > 200 && bassValue > 0.3) {
+        const angle = Math.random() * Math.PI * 2;
+        const length = 5 + bassValue * 50;
+        const speed = 1 + bassValue * 3;
+        const hue = Math.random() * 360;
+
+        effects.fractalEnergy.branches.push({
+          x: centerX,
+          y: centerY,
+          angle: angle,
+          length: length,
+          speed: speed,
+          hue: hue,
+          age: 0,
+          maxAge: 50 + Math.random() * 100,
+          segments: []
+        });
+
+        effects.fractalEnergy.lastSpawn = now;
+      }
+
+      // 更新和绘制分支
+      for (let i = effects.fractalEnergy.branches.length - 1; i >= 0; i--) {
+        const branch = effects.fractalEnergy.branches[i];
+        branch.age++;
+
+        if (branch.age >= branch.maxAge) {
+          effects.fractalEnergy.branches.splice(i, 1);
+          continue;
+        }
+
+        // 计算新位置
+        const newX = branch.x + Math.cos(branch.angle) * branch.speed;
+        const newY = branch.y + Math.sin(branch.angle) * branch.speed;
+
+        // 随机改变角度
+        if (Math.random() < 0.1) {
+          branch.angle += (Math.random() - 0.5) * 0.3;
+        }
+
+        // 根据高频增加分叉
+        if (branch.segments.length < 5 && Math.random() < highValue * 0.02) {
+          effects.fractalEnergy.branches.push({
+            x: branch.x,
+            y: branch.y,
+            angle: branch.angle + (Math.random() - 0.5) * 1,
+            length: branch.length * 0.8,
+            speed: branch.speed * 0.9,
+            hue: (branch.hue + Math.random() * 30 - 15) % 360,
+            age: branch.age,
+            maxAge: branch.maxAge * 0.8,
+            segments: []
+          });
+        }
+
+        // 保存线段
+        branch.segments.push({
+          x1: branch.x,
+          y1: branch.y,
+          x2: newX,
+          y2: newY
+        });
+
+        // 更新位置
+        branch.x = newX;
+        branch.y = newY;
+
+        // 绘制分支
+        const alpha = 1 - (branch.age / branch.maxAge);
+        const lineWidth = 1 + (branch.length / 10) * alpha;
+
+        for (let j = 0; j < branch.segments.length; j++) {
+          const seg = branch.segments[j];
+          const segAlpha = alpha * (j / branch.segments.length);
+
+          ctx.strokeStyle = `hsla(${branch.hue}, 100%, 60%, ${segAlpha})`;
+          ctx.lineWidth = lineWidth * (j / branch.segments.length);
+          ctx.beginPath();
+          ctx.moveTo(seg.x1, seg.y1);
+          ctx.lineTo(seg.x2, seg.y2);
+          ctx.stroke();
+
+          // 添加发光效果
+          if (j === branch.segments.length - 1) {
+            ctx.shadowBlur = lineWidth * 2;
+            ctx.shadowColor = `hsla(${branch.hue}, 100%, 50%, ${segAlpha * 0.5})`;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+          }
+        }
+
+        // 在末端添加能量球
+        if (branch.segments.length > 5) {
+          const lastSeg = branch.segments[branch.segments.length - 1];
+          const glowSize = lineWidth * 3 * alpha;
+
+          ctx.fillStyle = `hsla(${branch.hue}, 100%, 70%, ${alpha * 0.7})`;
+          ctx.beginPath();
+          ctx.arc(lastSeg.x2, lastSeg.y2, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.shadowBlur = glowSize * 3;
+          ctx.shadowColor = `hsla(${branch.hue}, 100%, 50%, ${alpha * 0.3})`;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      // 中心能量源
+      const centerSize = 10 + bassValue * 40;
+      const centerHue = (Date.now() * 0.05) % 360;
+
+      ctx.fillStyle = `hsla(${centerHue}, 100%, 70%, 0.8)`;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, centerSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowBlur = centerSize * 2;
+      ctx.shadowColor = `hsla(${centerHue}, 100%, 50%, 0.5)`;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // 4. 全息频谱效果
+    function drawHolographicBars() {
+      // 半透明背景创造拖尾效果
+      ctx.fillStyle = 'rgba(0, 0, 20, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      effects.holographicBars.rotation += 0.003;
+
+      const barCount = 60;
+      const maxBarHeight = canvas.height * 0.4;
+      const radius = Math.min(canvas.width, canvas.height) * 0.3;
+
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(effects.holographicBars.rotation);
+
+      // 绘制3D频谱柱
+      for (let i = 0; i < barCount; i++) {
+        const angle = (i / barCount) * Math.PI * 2;
+        const freqIndex = Math.floor((i / barCount) * dataArray.length);
+        const value = dataArray[freqIndex] / 255;
+        const barHeight = value * maxBarHeight;
+
+        // 计算3D位置
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        const z = 0;
+
+        // 3D投影
+        const scale = effects.holographicBars.depth / (effects.holographicBars.depth + z);
+        const px = x * scale;
+        const py = y * scale;
+
+        // 颜色和透明度
+        const hue = (i * 6 + Date.now() * 0.05) % 360;
+        const alpha = 0.3 + value * 0.7;
+
+        // 绘制柱状图
+        const barWidth = 5 * scale;
+        ctx.fillStyle = `hsla(${hue}, 100%, 60%, ${alpha})`;
+        ctx.beginPath();
+        ctx.moveTo(px - barWidth / 2, py);
+        ctx.lineTo(px + barWidth / 2, py);
+        ctx.lineTo(px + barWidth / 2, py - barHeight * scale);
+        ctx.lineTo(px - barWidth / 2, py - barHeight * scale);
+        ctx.closePath();
+        ctx.fill();
+
+        // 添加顶部高光
+        if (value > 0.3) {
+          ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${alpha * 0.7})`;
+          ctx.beginPath();
+          ctx.moveTo(px - barWidth / 2, py - barHeight * scale);
+          ctx.lineTo(px + barWidth / 2, py - barHeight * scale);
+          ctx.lineTo(px, py - (barHeight + 5) * scale);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // 添加连接线
+        if (i > 0) {
+          const prevAngle = ((i - 1) / barCount) * Math.PI * 2;
+          const prevX = Math.cos(prevAngle) * radius;
+          const prevY = Math.sin(prevAngle) * radius;
+          const prevScale = effects.holographicBars.depth / (effects.holographicBars.depth + z);
+          const prevPx = prevX * prevScale;
+          const prevPy = prevY * prevScale;
+
+          ctx.strokeStyle = `hsla(${(hue + 180) % 360}, 100%, 60%, ${alpha * 0.3})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(prevPx, prevPy - (dataArray[freqIndex - 1] / 255) * maxBarHeight * prevScale);
+          ctx.lineTo(px, py - barHeight * scale);
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore();
+
+      // 添加中心全息球
+      const bassValue = getFrequencyRangeAverage(0, 5);
+      const centerSize = 20 + bassValue * 50;
+      const centerHue = (Date.now() * 0.1) % 360;
+
+      // 球体发光效果
+      ctx.shadowBlur = centerSize * 2;
+      ctx.shadowColor = `hsla(${centerHue}, 100%, 50%, 0.5)`;
+      ctx.fillStyle = `hsla(${centerHue}, 100%, 70%, 0.6)`;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, centerSize, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // 球体网格线
+      ctx.strokeStyle = `hsla(${centerHue}, 100%, 80%, 0.4)`;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 10; i++) {
+        const angle = (i / 10) * Math.PI * 2 + Date.now() * 0.001;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, centerSize, angle, angle + Math.PI);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, centerSize * 0.7, angle, angle + Math.PI);
+        ctx.stroke();
+      }
+    }
+
+    // 5. 宇宙脉动效果
+    function drawCosmicPulse() {
+      // 渐变黑色背景
+      const gradient = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, 0,
+        canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) / 2
+      );
+      gradient.addColorStop(0, 'rgba(0, 5, 20, 0.8)');
+      gradient.addColorStop(1, 'rgba(0, 0, 5, 1)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const bassValue = getFrequencyRangeAverage(0, 10);
+      const midValue = getFrequencyRangeAverage(40, 60);
+      const highValue = getFrequencyRangeAverage(80, 100);
+
+      // 绘制星星
+      for (const star of effects.cosmicPulse.stars) {
+        const twinkle = Math.sin(Date.now() * 0.001 + star.x) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness * twinkle * 0.8})`;
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+      }
+
+      // 根据低频生成脉冲波
+      if (bassValue > 0.3 && Math.random() < 0.1) {
+        const hue = Math.random() * 60 + 200;
+        effects.cosmicPulse.pulses.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: 10,
+          maxSize: 50 + bassValue * 200,
+          speed: 1 + bassValue * 2,
+          hue: hue,
+          alpha: 0.8
+        });
+      }
+
+      // 根据高频生成小脉冲
+      if (highValue > 0.5 && Math.random() < 0.3) {
+        const hue = Math.random() * 60 + 240;
+        effects.cosmicPulse.pulses.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: 5,
+          maxSize: 20 + highValue * 50,
+          speed: 2 + highValue * 3,
+          hue: hue,
+          alpha: 0.6
+        });
+      }
+
+      // 更新和绘制脉冲波
+      for (let i = effects.cosmicPulse.pulses.length - 1; i >= 0; i--) {
+        const pulse = effects.cosmicPulse.pulses[i];
+        pulse.size += pulse.speed;
+
+        if (pulse.size >= pulse.maxSize) {
+          effects.cosmicPulse.pulses.splice(i, 1);
+          continue;
+        }
+
+        const currentAlpha = pulse.alpha * (1 - pulse.size / pulse.maxSize);
+
+        // 绘制脉冲波
+        ctx.strokeStyle = `hsla(${pulse.hue}, 100%, 70%, ${currentAlpha})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(pulse.x, pulse.y, pulse.size, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 添加发光效果
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = `hsla(${pulse.hue}, 100%, 50%, ${currentAlpha * 0.5})`;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      // 中心黑洞
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const blackHoleSize = 30 + bassValue * 20;
+
+      // 黑洞吸积盘
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(Date.now() * 0.0005);
+
+      for (let i = 0; i < 3; i++) {
+        const diskSize = blackHoleSize * (1 + i * 0.5);
+        const diskHue = (Date.now() * 0.05 + i * 40) % 360;
+
+        ctx.strokeStyle = `hsla(${diskHue}, 100%, 50%, ${0.3 + midValue * 0.5})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, diskSize, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 添加不规则部分
+        for (let j = 0; j < 5; j++) {
+          const angle = (j / 5) * Math.PI * 2 + Date.now() * 0.001 * i;
+          const flareSize = diskSize * (0.8 + Math.sin(Date.now() * 0.001) * 0.2);
+
+          ctx.strokeStyle = `hsla(${diskHue}, 100%, 70%, ${0.6 + midValue * 0.3})`;
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.arc(0, 0, flareSize, angle, angle + 0.3);
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore();
+
+      // 黑洞本体
+      const gradientHole = ctx.createRadialGradient(
+        centerX, centerY, blackHoleSize * 0.5,
+        centerX, centerY, blackHoleSize
+      );
+      gradientHole.addColorStop(0, 'rgba(0, 0, 0, 1)');
+      gradientHole.addColorStop(0.7, 'rgba(50, 50, 100, 0.8)');
+      gradientHole.addColorStop(1, 'rgba(100, 100, 200, 0)');
+
+      ctx.fillStyle = gradientHole;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, blackHoleSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 黑洞引力透镜效果
+      ctx.strokeStyle = `rgba(100, 150, 255, 0.3)`;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 10; i++) {
+        const ringSize = blackHoleSize * (1.5 + i * 0.3);
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, ringSize, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    // 辅助函数：获取频率范围平均值
+    function getFrequencyRangeAverage(start, end) {
+      if (!dataArray || start >= end) return 0;
+
+      start = Math.max(0, Math.min(dataArray.length - 1, start));
+      end = Math.max(0, Math.min(dataArray.length - 1, end));
+
+      let sum = 0;
+      for (let i = start; i <= end; i++) {
+        sum += dataArray[i] / 255;
+      }
+
+      return sum / (end - start + 1);
+    }
+
+    // 窗口大小改变时调整画布大小
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+    });
+  </script>
+</body>
+
+</html>

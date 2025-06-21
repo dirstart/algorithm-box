@@ -50,10 +50,13 @@
   // 主线程竞态计算
   main();
   function bigSort() {
-    const start = performance.now()
-    const value = fab(40)
-    const end = performance.now()
-    console.log('🍀🍀🍀🍀 no worker calculate', value, end - start)
+    setTimeout(() => {
+      const start = performance.now()
+      const value = fab(40)
+      const end = performance.now()
+      console.log('🍀🍀🍀🍀 no worker calculate', value, end - start)
+    }, 0)
+
   }
 
   function useWorkerBigSort() {
