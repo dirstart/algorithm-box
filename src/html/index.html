@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>Document</title>
+</head>
+
+<body>
+  worker test
+  <button onclick="triggerWorker()">开启worker</button>
+  <div
+    id="animation"
+    style="width:50px;height:50px;background:red;position:absolute;"
+  ></div>
+</body>
+
+<div>
+  <button onclick="bigSort()">
+    不使用 worker
+  </button>
+  <button onclick="useWorkerBigSort()">
+    使用 worker
+  </button>
+</div>
+<script>
+  function fab(n) {
+    if (n === 0) {
+      return 0;
+    }
+    if (n === 1) {
+      return 1;
+    }
+    return fab(n - 1) + fab(n - 2)
+  }
+  function main() {
+    const box = document.getElementById('animation');
+    let pos = 0;
+    const animate = () => {
+      pos = (pos + 1) % window.innerWidth;
+      box.style.left = pos + 'px';
+      requestAnimationFrame(animate)
+    }
+    animate();
+  }
+  // 主线程竞态计算
+  main();
+  function bigSort() {
+    const start = performance.now()
+    const value = fab(40)
+    const end = performance.now()
+    console.log('🍀🍀🍀🍀 no worker calculate', value, end - start)
+  }
+
+  function useWorkerBigSort() {
+    const start = performance.now();
+    const worker = new Worker('/timer-worker.js')
+    worker.postMessage(40)
+    worker.onmessage = e => {
+      const end = performance.now();
+      console.log('🍀🍀🍀🍀 use worker calculate', '用时：', end - start);
+    }
+  }
+</script>
+
+</html>
